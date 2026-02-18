@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Solar de Anahi ✨</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #0a0a1a 0%, #000 100%);
+            height: 100vh;
+            overflow: hidden;
+            cursor: grab;
+            user-select: none;
+        }
+
+        body:active {
+            cursor: grabbing;
+        }
+
+        /* Fondo espacial con nebulosas */
+        .space-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(157, 78, 221, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 50% 20%, rgba(199, 125, 255, 0.2) 0%, transparent 40%),
+                radial-gradient(circle at 30% 80%, rgba(114, 9, 183, 0.25) 0%, transparent 45%);
+            z-index: -3;
+            animation: nebulaDrift 20s ease-in-out infinite;
+        }
+
+        /* Campo de estrellas */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            animation: twinkle 3s ease-in-out infinite;
+        }
+
+        .star.bright {
+            box-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
+        }
+
+        /* Container principal */
+        .universe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100vw;
+            height: 100vh;
+            transform: translate(-50%, -50%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Sistema solar */
+        .solar-system {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Sol central - Anahi */
+        .sun {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120px;
+            height: 120px;
+            transform: translate(-50%, -50%);
+            background: 
+                radial-gradient(circle at 25% 25%, #fff 0%, #ffeb3b 20%, #ff9800 50%, #ff5722 80%, #e91e63 100%);
+            border-radius: 50%;
+            box-shadow: 
+                0 0 60px rgba(255, 235, 59, 0.8),
+                0 0 100px rgba(255, 152, 0, 0.6),
+                0 0 140px rgba(255, 87, 34, 0.4),
+                0 0 180px rgba(233, 30, 99, 0.2);
+            animation: sunGlow 4s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        .sun::before {
+            content: '';
+            position: absolute;
+            top: -25px;
+            left: -25px;
+            right: -25px;
+            bottom: -25px;
+            background: radial-gradient(circle, rgba(255, 235, 59, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: coronaPulse 3s ease-in-out infinite;
+        }
+
+        .sun-name {
+            font-family: 'Orbitron', monospace;
+            font-size: 18px;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 
+                0 0 10px rgba(255, 255, 255, 1),
+                0 0 20px rgba(255, 215, 0, 0.8),
+                0 0 30px rgba(255, 152, 0, 0.6);
+            letter-spacing: 3px;
+            z-index: 1;
+            position: relative;
+            animation: textShimmer 2s ease-in-out infinite alternate;
+        }
+
+        /* Órbitas */
+        .orbit {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: orbitRotate linear infinite;
+        }
+
+        /* Eliminado el efecto ::after para los anillos */
+
+        /* Definir tamaños y velocidades de órbitas */
+        .orbit:nth-child(2) { width: 200px; height: 200px; animation-duration: 8s; }
+        .orbit:nth-child(3) { width: 260px; height: 260px; animation-duration: 12s; animation-direction: reverse; }
+        .orbit:nth-child(4) { width: 320px; height: 320px; animation-duration: 16s; }
+        .orbit:nth-child(5) { width: 380px; height: 380px; animation-duration: 20s; animation-direction: reverse; }
+        .orbit:nth-child(6) { width: 440px; height: 440px; animation-duration: 24s; }
+        .orbit:nth-child(7) { width: 500px; height: 500px; animation-duration: 28s; animation-direction: reverse; }
+
+        /* Planetas */
+        .planet {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: planetSpin 15s linear infinite;
+        }
+
+        .planet:hover {
+            transform: translateX(-50%) scale(1.5);
+            z-index: 50;
+            filter: brightness(1.3) drop-shadow(0 0 20px currentColor);
+        }
+
+        .planet:active {
+            transform: translateX(-50%) scale(1.7);
+        }
+
+        /* Mercurio */
+        .mercury {
+            width: 14px;
+            height: 14px;
+            background: 
+                radial-gradient(circle at 30% 30%, #d4af37 0%, #b8860b 60%, #8b6914 100%);
+            box-shadow: 
+                0 0 15px rgba(212, 175, 55, 0.6),
+                inset -4px -4px 8px rgba(139, 105, 20, 0.5);
+        }
+
+        /* Venus */
+        .venus {
+            width: 18px;
+            height: 18px;
+            background: 
+                radial-gradient(circle at 25% 25%, #fff59d 0%, #ffcc02 50%, #ff8f00 100%);
+            box-shadow: 
+                0 0 20px rgba(255, 204, 2, 0.7),
+                inset -5px -5px 10px rgba(255, 143, 0, 0.4);
+        }
+
+        /* Tierra */
+        .earth {
+            width: 20px;
+            height: 20px;
+            background: 
+                radial-gradient(circle at 20% 20%, #42a5f5 0%, #1976d2 60%, #0d47a1 100%),
+                radial-gradient(circle at 60% 40%, rgba(76, 175, 80, 0.8) 0%, transparent 40%),
+                radial-gradient(circle at 80% 70%, rgba(139, 195, 74, 0.6) 0%, transparent 30%);
+            box-shadow: 
+                0 0 25px rgba(66, 165, 245, 0.8),
+                inset -5px -5px 10px rgba(13, 71, 161, 0.5);
+            position: relative;
+        }
+
+        .earth::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle at 30% 30%, #f5f5f5 0%, #bdbdbd 100%);
+            border-radius: 50%;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: moonOrbit 4s linear infinite;
+            box-shadow: 0 0 8px rgba(245, 245, 245, 0.6);
+        }
+
+        /* Marte */
+        .mars {
+            width: 16px;
+            height: 16px;
+            background: 
+                radial-gradient(circle at 25% 25%, #ff7043 0%, #d84315 60%, #bf360c 100%);
+            box-shadow: 
+                0 0 20px rgba(255, 112, 67, 0.6),
+                inset -4px -4px 8px rgba(191, 54, 12, 0.5);
+        }
+
+        /* Júpiter */
+        .jupiter {
+            width: 42px;
+            height: 42px;
+            background: 
+                radial-gradient(circle at 25% 25%, #ffab40 0%, #ff9800 40%, #f57c00 100%),
+                repeating-linear-gradient(0deg,
+                    rgba(245, 124, 0, 0.3) 0px,
+                    rgba(255, 152, 0, 0.5) 8px,
+                    rgba(255, 171, 64, 0.3) 16px);
+            box-shadow: 
+                0 0 35px rgba(255, 171, 64, 0.7),
+                inset -10px -10px 20px rgba(245, 124, 0, 0.4);
+        }
+
+        /* Saturno */
+        .saturn {
+            width: 36px;
+            height: 36px;
+            background: 
+                radial-gradient(circle at 25% 25%, #fff3e0 0%, #ffcc02 50%, #ffa000 100%);
+            box-shadow: 
+                0 0 30px rgba(255, 204, 2, 0.6),
+                inset -8px -8px 16px rgba(255, 160, 0, 0.4);
+            position: relative;
+        }
+
+        .saturn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 30px;
+            border: 3px solid rgba(255, 204, 2, 0.6);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 
+                0 0 15px rgba(255, 204, 2, 0.3),
+                inset 0 0 10px rgba(255, 160, 0, 0.2);
+        }
+
+        .saturn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 24px;
+            border: 2px solid rgba(255, 204, 2, 0.4);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Panel de información */
+        .info-panel {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(20px);
+            color: #c77dff;
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px solid rgba(199, 125, 255, 0.3);
+            max-width: 320px;
+            z-index: 200;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            animation: panelGlow 4s ease-in-out infinite;
+        }
+
+        .info-panel h2 {
+            font-family: 'Orbitron', monospace;
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-shadow: 0 0 10px rgba(199, 125, 255, 0.5);
+        }
+
+        .info-panel p {
+            margin: 8px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+
+        /* Zoom indicator */
+        .zoom-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #c77dff;
+            padding: 12px 18px;
+            border-radius: 15px;
+            border: 1px solid rgba(199, 125, 255, 0.3);
+            font-family: 'Orbitron', monospace;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 200;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Controles */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 200;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .control-btn {
+            background: rgba(199, 125, 255, 0.15);
+            border: 2px solid rgba(199, 125, 255, 0.4);
+            color: #c77dff;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            font-size: 14px;
+            backdrop-filter: blur(15px);
+            user-select: none;
+        }
+
+        .control-btn:hover {
+            background: rgba(199, 125, 255, 0.3);
+            border-color: #c77dff;
+            color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(199, 125, 255, 0.4);
+        }
+
+        .control-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .control-btn.active {
+            background: rgba(199, 125, 255, 0.4);
+            border-color: #c77dff;
+            color: #fff;
+        }
+
+        /* Animaciones */
+        @keyframes nebulaDrift {
+            0%, 100% { 
+                opacity: 0.6; 
+                transform: rotate(0deg) scale(1); 
+            }
+            50% { 
+                opacity: 0.8; 
+                transform: rotate(180deg) scale(1.05); 
+            }
+        }
+
+        @keyframes twinkle {
+            0%, 100% { 
+                opacity: 0.3; 
+                transform: scale(0.8); 
+            }
+            50% { 
+                opacity: 1; 
+                transform: scale(1.2); 
+            }
+        }
+
+        @keyframes sunGlow {
+            0%, 100% { 
+                box-shadow: 
+                    0 0 60px rgba(255, 235, 59, 0.8),
+                    0 0 100px rgba(255, 152, 0, 0.6),
+                    0 0 140px rgba(255, 87, 34, 0.4),
+                    0 0 180px rgba(233, 30, 99, 0.2);
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% { 
+                box-shadow: 
+                    0 0 80px rgba(255, 235, 59, 1),
+                    0 0 120px rgba(255, 152, 0, 0.8),
+                    0 0 160px rgba(255, 87, 34, 0.6),
+                    0 0 200px rgba(233, 30, 99, 0.3);
+                transform: translate(-50%, -50%) scale(1.03);
+            }
+        }
+
+        @keyframes coronaPulse {
+            0%, 100% { 
+                opacity: 0.5; 
+                transform: scale(1); 
+            }
+            50% { 
+                opacity: 0.8; 
+                transform: scale(1.1); 
+            }
+        }
+
+        @keyframes textShimmer {
+            0% { 
+                text-shadow: 
+                    0 0 10px rgba(255, 255, 255, 1),
+                    0 0 20px rgba(255, 215, 0, 0.8),
+                    0 0 30px rgba(255, 152, 0, 0.6);
+            }
+            100% { 
+                text-shadow: 
+                    0 0 15px rgba(255, 255, 255, 1),
+                    0 0 25px rgba(255, 215, 0, 1),
+                    0 0 35px rgba(255, 152, 0, 0.8),
+                    0 0 45px rgba(255, 152, 0, 0.6);
+            }
+        }
+
+        @keyframes orbitRotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Eliminada animación orbitShimmer */
+
+        @keyframes planetSpin {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        @keyframes moonOrbit {
+            from { 
+                transform: translateX(-50%) rotate(0deg) translateX(28px) rotate(0deg); 
+            }
+            to { 
+                transform: translateX(-50%) rotate(360deg) translateX(28px) rotate(-360deg); 
+            }
+        }
+
+        @keyframes panelGlow {
+            0%, 100% { 
+                border-color: rgba(199, 125, 255, 0.3);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            }
+            50% { 
+                border-color: rgba(199, 125, 255, 0.5);
+                box-shadow: 
+                    0 15px 35px rgba(0, 0, 0, 0.5),
+                    0 0 20px rgba(199, 125, 255, 0.2);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: scale(0.8); 
+            }
+            to { 
+                opacity: 1; 
+                transform: scale(1); 
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .solar-system {
+                width: 600px;
+                height: 600px;
+            }
+
+            .sun {
+                width: 90px;
+                height: 90px;
+            }
+
+            .sun-name {
+                font-size: 14px;
+                letter-spacing: 2px;
+            }
+
+            .orbit:nth-child(2) { width: 160px; height: 160px; }
+            .orbit:nth-child(3) { width: 210px; height: 210px; }
+            .orbit:nth-child(4) { width: 260px; height: 260px; }
+            .orbit:nth-child(5) { width: 310px; height: 310px; }
+            .orbit:nth-child(6) { width: 360px; height: 360px; }
+            .orbit:nth-child(7) { width: 410px; height: 410px; }
+
+            .info-panel {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                max-width: none;
+                padding: 15px;
+            }
+
+            .controls {
+                bottom: 10px;
+                gap: 8px;
+            }
+
+            .control-btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            .zoom-display {
+                top: 10px;
+                right: 10px;
+                padding: 10px 14px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .solar-system {
+                width: 500px;
+                height: 500px;
+            }
+
+            .sun {
+                width: 70px;
+                height: 70px;
+            }
+
+            .sun-name {
+                font-size: 12px;
+                letter-spacing: 1px;
+            }
+
+            .orbit:nth-child(2) { width: 130px; height: 130px; }
+            .orbit:nth-child(3) { width: 170px; height: 170px; }
+            .orbit:nth-child(4) { width: 210px; height: 210px; }
+            .orbit:nth-child(5) { width: 250px; height: 250px; }
+            .orbit:nth-child(6) { width: 290px; height: 290px; }
+            .orbit:nth-child(7) { width: 330px; height: 330px; }
+
+            .info-panel {
+                padding: 12px;
+                font-size: 12px;
+            }
+
+            .info-panel h2 {
+                font-size: 16px;
+            }
+
+            .control-btn {
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+        }
+
+        /* Estados de pausa */
+        .paused .orbit,
+        .paused .sun,
+        .paused .planet,
+        .paused .earth::after,
+        .paused .sun::before {
+            animation-play-state: paused !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="space-background"></div>
+    <div class="starfield"></div>
+
+    <div class="info-panel">
+        <h2>🌟 Sistema Solar de Anahi</h2>
+        <p>✨ Un universo donde brillas como el sol</p>
+        <p>🖱️ Arrastra para explorar • Zoom con rueda</p>
+        <p>🪐 Haz clic en planetas para descubrir</p>
+        <p>⌨️ Espacio: pausa • +/-: zoom • R: reset</p>
+    </div>
+
+    <div class="zoom-display">
+        Zoom: <span id="zoom-value">100%</span>
+    </div>
+
+    <div class="universe" id="universe">
+        <div class="solar-system">
+            <div class="sun" onclick="showSunInfo()">
+                <div class="sun-name">ANAHI</div>
+            </div>
+
+            <div class="orbit">
+                <div class="planet mercury" onclick="showPlanetInfo('Mercurio', 'La velocidad de tu mente brillante')"></div>
+            </div>
+
+            <div class="orbit">
+                <div class="planet venus" onclick="showPlanetInfo('Venus', 'Tu belleza que ilumina todo a tu alrededor')"></div>
+            </div>
+
+            <div class="orbit">
+                <div class="planet earth" onclick="showPlanetInfo('Tierra', 'Tu mundo de música y gustos únicos')"></div>
+            </div>
+
+            <div class="orbit">
+                <div class="planet mars" onclick="showPlanetInfo('Marte', 'Tu energía y personalidad vibrante')"></div>
+            </div>
+
+            <div class="orbit">
+                <div class="planet jupiter" onclick="showPlanetInfo('Júpiter', 'Tu gran corazón e inteligencia')"></div>
+            </div>
+
+            <div class="orbit">
+                <div class="planet saturn" onclick="showPlanetInfo('Saturno', 'Tu elegancia y seguridad natural')"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="control-btn" onclick="toggleAnimation()">⏯️ Pausa</button>
+        <button class="control-btn" onclick="zoomIn()">🔍+ Zoom</button>
+        <button class="control-btn" onclick="zoomOut()">🔍- Zoom</button>
+        <button class="control-btn" onclick="resetView()">🏠 Reset</button>
+        <button class="control-btn" onclick="centerView()">🎯 Centrar</button>
+    </div>
+
+    <script>
+        // Variables globales
+        let currentZoom = 1;
+        let currentX = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let isPaused = false;
+        
+        const universe = document.getElementById('universe');
+        const zoomValue = document.getElementById('zoom-value');
+        const isMobile = window.innerWidth < 768;
+
+        // Generar campo de estrellas
+        function createStarField() {
+            const starfield = document.querySelector('.starfield');
+            const numStars = isMobile ? 100 : 200;
+            
+            for (let i = 0; i < numStars; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                if (Math.random() > 0.8) {
+                    star.classList.add('bright');
+                }
+                
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.width = (Math.random() * 3 + 1) + 'px';
+                star.style.height = star.style.width;
+                star.style.animationDelay = Math.random() * 3 + 's';
+                star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                
+                starfield.appendChild(star);
+            }
+        }
+
+        // Actualizar transformación
+        function updateTransform() {
+            const clampedX = Math.max(-window.innerWidth, Math.min(window.innerWidth, currentX));
+            const clampedY = Math.max(-window.innerHeight, Math.min(window.innerHeight, currentY));
+            
+            universe.style.transform = `
+                translate(calc(-50% + ${clampedX}px), calc(-50% + ${clampedY}px)) 
+                scale(${currentZoom})
+            `;
+            zoomValue.textContent = Math.round(currentZoom * 100) + '%';
+        }
+
+        // Control de arrastre con mouse
+        function handleMouseDown(e) {
+            if (e.target.closest('.control-btn') || e.target.closest('.info-panel')) return;
+            
+            isDragging = true;
+            startX = e.clientX - currentX;
+            startY = e.clientY - currentY;
+            document.body.style.cursor = 'grabbing';
+        }
+
+        function handleMouseMove(e) {
+            if (!isDragging) return;
+            
+            currentX = e.clientX - startX;
+            currentY = e.clientY - startY;
+            updateTransform();
+        }
+
+        function handleMouseUp() {
+            isDragging = false;
+            document.body.style.cursor = 'grab';
+        }
+
+        // Control de zoom con rueda del mouse
+        function handleWheel(e) {
+            e.preventDefault();
+            const zoomSpeed = 0.1;
+            const delta = e.deltaY < 0 ? zoomSpeed : -zoomSpeed;
+            
+            currentZoom = Math.max(0.3, Math.min(3, currentZoom + delta));
+            updateTransform();
+        }
+
+        // Controles táctiles
+        let touchStartDistance = 0;
+        let touchStartZoom = 1;
+
+        function getTouchDistance(e) {
+            if (e.touches.length < 2) return 0;
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            return Math.sqrt(
+                Math.pow(touch2.clientX - touch1.clientX, 2) +
+                Math.pow(touch2.clientY - touch1.clientY, 2)
+            );
+        }
+
+        function handleTouchStart(e) {
+            if (e.touches.length === 2) {
+                touchStartDistance = getTouchDistance(e);
+                touchStartZoom = currentZoom;
+            } else if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                isDragging = true;
+                startX = touch.clientX - currentX;
+                startY = touch.clientY - currentY;
+            }
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            
+            if (e.touches.length === 2) {
+                const currentDistance = getTouchDistance(e);
+                if (touchStartDistance > 0) {
+                    const scale = currentDistance / touchStartDistance;
+                    currentZoom = Math.max(0.3, Math.min(3, touchStartZoom * scale));
+                    updateTransform();
+                }
+            } else if (e.touches.length === 1 && isDragging) {
+                const touch = e.touches[0];
+                currentX = touch.clientX - startX;
+                currentY = touch.clientY - startY;
+                updateTransform();
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (e.touches.length === 0) {
+                isDragging = false;
+                touchStartDistance = 0;
+            }
+        }
+
+        // Funciones de control
+        function toggleAnimation() {
+            isPaused = !isPaused;
+            document.body.classList.toggle('paused', isPaused);
+            const btn = event.target;
+            btn.innerHTML = isPaused ? '▶️ Play' : '⏯️ Pausa';
+            btn.classList.toggle('active', isPaused);
+        }
+
+        function zoomIn() {
+            currentZoom = Math.min(3, currentZoom + 0.2);
+            updateTransform();
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(0.3, currentZoom - 0.2);
+            updateTransform();
+        }
+
+        function resetView() {
+            currentZoom = 1;
+            currentX = 0;
+            currentY = 0;
+            isPaused = false;
+            document.body.classList.remove('paused');
+            document.querySelector('.controls .control-btn').innerHTML = '⏯️ Pausa';
+            document.querySelector('.controls .control-btn').classList.remove('active');
+            updateTransform();
+        }
+
+        function centerView() {
+            currentX = 0;
+            currentY = 0;
+            updateTransform();
+        }
+
+        // Mostrar información de planetas
+        function showPlanetInfo(name, message) {
+            createTooltip(name, message);
+        }
+
+        function showSunInfo() {
+            createTooltip('Anahi', 'El centro brillante de este universo especial ✨');
+        }
+
+        function createTooltip(title, text) {
+            // Remover tooltip existente
+            const existing = document.querySelector('.tooltip');
+            if (existing) existing.remove();
+
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.innerHTML = `
+                <div style="font-weight: 600; margin-bottom: 8px; font-size: 16px;">${title}</div>
+                <div style="opacity: 0.9; line-height: 1.4;">${text}</div>
+            `;
+            
+            tooltip.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.95);
+                color: #c77dff;
+                padding: 20px 25px;
+                border-radius: 20px;
+                border: 2px solid rgba(199, 125, 255, 0.6);
+                z-index: 1000;
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                text-align: center;
+                backdrop-filter: blur(20px);
+                box-shadow: 
+                    0 20px 40px rgba(0, 0, 0, 0.6),
+                    0 0 30px rgba(199, 125, 255, 0.3);
+                animation: fadeIn 0.3s ease-out;
+                max-width: 300px;
+                margin: 0 20px;
+            `;
+            
+            document.body.appendChild(tooltip);
+            
+            setTimeout(() => {
+                if (tooltip.parentNode) {
+                    tooltip.style.opacity = '0';
+                    tooltip.style.transform = 'translate(-50%, -50%) scale(0.9)';
+                    setTimeout(() => tooltip.remove(), 300);
+                }
+            }, 3500);
+        }
+
+        // Atajos de teclado
+        function handleKeyboard(e) {
+            switch(e.key.toLowerCase()) {
+                case ' ':
+                    e.preventDefault();
+                    toggleAnimation();
+                    break;
+                case '+':
+                case '=':
+                    e.preventDefault();
+                    zoomIn();
+                    break;
+                case '-':
+                    e.preventDefault();
+                    zoomOut();
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    resetView();
+                    break;
+                case 'c':
+                    e.preventDefault();
+                    centerView();
+                    break;
+            }
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            createStarField();
+            
+            // Mouse events
+            document.addEventListener('mousedown', handleMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('wheel', handleWheel, { passive: false });
+
+            // Touch events
+            document.addEventListener('touchstart', handleTouchStart, { passive: false });
+            document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+            // Keyboard events
+            document.addEventListener('keydown', handleKeyboard);
+
+            // Prevenir gestos nativos en móviles
+            document.addEventListener('gesturestart', e => e.preventDefault());
+            document.addEventListener('gesturechange', e => e.preventDefault());
+
+            // Animación de entrada
+            setTimeout(() => {
+                document.querySelector('.solar-system').style.animation = 'fadeIn 2s ease-out';
+                document.querySelector('.info-panel').style.animation = 'fadeIn 2s ease-out 0.5s both';
+                document.querySelector('.controls').style.animation = 'fadeIn 2s ease-out 1s both';
+            }, 300);
+        });
+
+        // Efecto de brillos aleatorios en el sol
+        setInterval(() => {
+            if (!isPaused) {
+                const sun = document.querySelector('.sun');
+                const intensity = 0.9 + Math.random() * 0.2;
+                sun.style.filter = `brightness(${intensity}) saturate(${0.8 + Math.random() * 0.4})`;
+            }
+        }, 2000 + Math.random() * 3000);
+    </script>
+</body>
+</html>
